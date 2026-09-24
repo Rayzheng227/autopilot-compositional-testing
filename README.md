@@ -18,7 +18,7 @@ This is the codebase for the work: [https://arxiv.org/abs/2405.16914](https://ar
 
 ## Requirements
 
-This codebase requires a Linux computer with GPU capacity needed by the Simulators. Ubuntu 22.04 operating system and an NVIDIA GPU are recommended.
+This codebase requires a Linux computer with GPU capacity needed by the Simulators. Ubuntu 22.04 operating system and an NVIDIA GPU 3090 are recommended.
 
 ## Setup Instructions
 
@@ -114,4 +114,6 @@ where `autopilot`, `vista_type`, and `ve` are taken from the same range as in th
 
 ## Web UI
 
-Please refer to the `develop` branch.
+A local dashboard for CARLA, Autoware, CCTest, and ROS 2 bag recording is
+available in [`tools/autoware-control-panel`](tools/autoware-control-panel).
+See its [README](tools/autoware-control-panel/README.md) for startup instructions.
