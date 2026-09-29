@@ -1,0 +1,33 @@
+diff --git a/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp b/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
+--- a/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
++++ b/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
+@@ -436,5 +436,29 @@ void VehicleCmdGate::publishControlCommands(const Commands & commands)
+     filtered_commands.control = filterControlCommand(filtered_commands.control);
+   }
++
++  // FI-CTRL-003: model a longitudinal actuator polarity/configuration fault.
++  // A valid post-filter braking command is turned into acceleration while the
++  // speed target is kept above the current speed. Steering is not modified.
++  if (
++    is_engaged_ && current_operation_mode_.is_autoware_control_enabled &&
++    !(use_emergency_handling_ && is_system_emergency_) &&
++    filtered_commands.control.longitudinal.acceleration < 0.0) {
++    const auto original_speed = filtered_commands.control.longitudinal.speed;
++    const auto original_acceleration = filtered_commands.control.longitudinal.acceleration;
++    const double injected_speed = std::max(
++      static_cast<double>(original_speed),
++      std::fabs(current_kinematics_.twist.twist.linear.x) + 5.0);
++    const double injected_acceleration = std::fabs(original_acceleration);
++    filtered_commands.control.longitudinal.speed = injected_speed;
++    filtered_commands.control.longitudinal.acceleration = injected_acceleration;
++    RCLCPP_ERROR_THROTTLE(
++      get_logger(), *get_clock(), 1000,
++      "FI-CTRL-003 activated: brake polarity inverted "
++      "[v=%.3f,a=%.3f] -> [v=%.3f,a=%.3f] actual_v=%.3f",
++      original_speed, original_acceleration, injected_speed, injected_acceleration,
++      current_kinematics_.twist.twist.linear.x);
++  }
++
+   // tmp: Publish vehicle emergency status
+   VehicleEmergencyStamped vehicle_cmd_emergency;
+   vehicle_cmd_emergency.emergency = (use_emergency_handling_ && is_system_emergency_);

@@ -1,0 +1,29 @@
+diff --git a/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp b/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
+--- a/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
++++ b/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
+@@ -311,5 +311,25 @@ void MotionVelocitySmootherNode::publishTrajectory(const TrajectoryPoints & traje
+ {
+   Trajectory publishing_trajectory = motion_utils::convertToTrajectory(trajectory);
+   publishing_trajectory.header = base_traj_raw_ptr_->header;
++
++  // FI-PLAN-005: corrupt the final trajectory after velocity, acceleration,
++  // jerk, and stop constraints have already been applied by the smoother.
++  constexpr float kInjectedVelocityMps = 40.0F;
++  constexpr float kInjectedAccelerationMps2 = 3.0F;
++  const size_t point_count = publishing_trajectory.points.size();
++  float max_velocity_before = 0.0F;
++  for (auto & point : publishing_trajectory.points) {
++    max_velocity_before = std::max(max_velocity_before, point.longitudinal_velocity_mps);
++    point.longitudinal_velocity_mps = kInjectedVelocityMps;
++    point.acceleration_mps2 = kInjectedAccelerationMps2;
++  }
++  if (point_count > 0) {
++    RCLCPP_WARN(
++      get_logger(),
++      "FI-PLAN-005 activated: final trajectory overwritten points=%zu "
++      "max_before=%.3f velocity=%.1f acceleration=%.1f",
++      point_count, max_velocity_before, kInjectedVelocityMps, kInjectedAccelerationMps2);
++  }
++
+   pub_trajectory_->publish(publishing_trajectory);
+ }

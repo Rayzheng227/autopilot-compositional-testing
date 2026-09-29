@@ -1,0 +1,13 @@
+{
+  "fault_id": "FI-CTRL-001-DIAG",
+  "source": "Representative FI-CTRL-001 moving-ego case for gate/bag diagnosis",
+  "recording": {
+    "enabled": true,
+    "instance": "v1",
+    "all_topics": true,
+    "output_dir": "/home/ray/AutowareRecordings/FI-CTRL-001/merging-gate-diagnostic"
+  },
+  "cases": [
+    {"vista": "merging", "ve": 10.0, "xa": 85.0, "xf": 10.0, "source_verdict": "CS"}
+  ]
+}
