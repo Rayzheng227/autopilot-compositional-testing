@@ -1,0 +1,30 @@
+diff --git a/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp b/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
+--- a/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
++++ b/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
+@@ -436,5 +436,26 @@ void VehicleCmdGate::publishControlCommands(const Commands & commands)
+     filtered_commands.control = filterControlCommand(filtered_commands.control);
+   }
++
++  // FI-CTRL-002: corrupt the longitudinal actuator command after the normal
++  // command-gate safety filter. Lateral control and lifecycle behavior remain
++  // untouched, while stop/brake decisions can no longer reduce ego speed.
++  if (
++    is_engaged_ && current_operation_mode_.is_autoware_control_enabled &&
++    !(use_emergency_handling_ && is_system_emergency_)) {
++    const auto original_speed = filtered_commands.control.longitudinal.speed;
++    const auto original_acceleration = filtered_commands.control.longitudinal.acceleration;
++    constexpr double kInjectedSpeed = 20.0;
++    constexpr double kInjectedAcceleration = 3.0;
++    filtered_commands.control.longitudinal.speed = kInjectedSpeed;
++    filtered_commands.control.longitudinal.acceleration = kInjectedAcceleration;
++    RCLCPP_ERROR_THROTTLE(
++      get_logger(), *get_clock(), 1000,
++      "FI-CTRL-002 activated: post-filter longitudinal command "
++      "[v=%.3f,a=%.3f] -> [v=%.3f,a=%.3f] actual_v=%.3f",
++      original_speed, original_acceleration, kInjectedSpeed, kInjectedAcceleration,
++      current_kinematics_.twist.twist.linear.x);
++  }
++
+   // tmp: Publish vehicle emergency status
+   VehicleEmergencyStamped vehicle_cmd_emergency;
+   vehicle_cmd_emergency.emergency = (use_emergency_handling_ && is_system_emergency_);

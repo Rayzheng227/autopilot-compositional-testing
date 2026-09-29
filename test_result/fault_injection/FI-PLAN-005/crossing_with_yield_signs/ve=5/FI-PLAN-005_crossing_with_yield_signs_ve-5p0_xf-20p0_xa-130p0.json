@@ -1,0 +1,11 @@
+{
+  "ve": 5.0,
+  "xf": 20.0,
+  "xa": 130.0,
+  "verdict": "PS",
+  "safety_issues": [],
+  "simulation_time": 53.938002586364746,
+  "checking_time": 0.15540266036987305,
+  "fault_id": "FI-PLAN-005",
+  "source_verdict": "PS"
+}
