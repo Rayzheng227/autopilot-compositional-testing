@@ -1,0 +1,13 @@
+{
+  "ve": 15.0,
+  "xf": 20.0,
+  "xa": 85.0,
+  "verdict": "Aa",
+  "safety_issues": [
+    "arriving_fault"
+  ],
+  "simulation_time": 37.11538243293762,
+  "checking_time": 0.13831281661987305,
+  "fault_id": "FI-CTRL-002",
+  "source_verdict": "CS"
+}

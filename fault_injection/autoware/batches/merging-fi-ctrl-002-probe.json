@@ -1,0 +1,13 @@
+{
+  "fault_id": "FI-CTRL-002",
+  "source": "Representative moving-ego safe boundary from CCTest Table 10",
+  "recording": {
+    "enabled": true,
+    "instance": "v1",
+    "all_topics": true,
+    "output_dir": "/home/ray/AutowareRecordings/FI-CTRL-002/merging-probe"
+  },
+  "cases": [
+    {"vista": "merging", "ve": 10.0, "xa": 85.0, "xf": 10.0, "source_verdict": "CS"}
+  ]
+}

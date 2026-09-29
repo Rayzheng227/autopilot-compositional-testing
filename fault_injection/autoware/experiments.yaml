@@ -1,0 +1,26 @@
+schema_version: 1
+defaults:
+  recording:
+    enabled: true
+    instance: v1
+    all_topics: true
+    output_root: /home/ray/AutowareRecordings
+faults:
+  - id: FI-CTRL-003
+    name: 制动命令符号反转
+    enabled: true
+    image: autoware-cctest-fault:fi-ctrl-003
+    batch_file: fault_injection/autoware/batches/merging-fi-ctrl-003-screen.json
+    description: Gate 限幅后的负加速度被反转为正加速度；确定性 clean CS 场景变为 Aa。
+  - id: FI-CTRL-002
+    name: Gate 后纵向命令覆盖
+    enabled: true
+    image: autoware-cctest-fault:fi-ctrl-002
+    batch_file: fault_injection/autoware/batches/merging-fi-ctrl-002-screen.json
+    description: 正常安全限幅后强制发布 20 m/s、+3 m/s²；12 个确定性 clean 安全场景全部变为 Aa。
+  - id: FI-PLAN-005
+    name: 平滑后最终轨迹覆盖
+    enabled: true
+    image: autoware-cctest-fault:fi-plan-005
+    batch_file: fault_injection/autoware/batches/crossing-fi-plan-005-search.json
+    description: 在速度平滑与停车约束之后覆盖最终轨迹；14 个确定性 clean PS 场景变为 Aa，另有 3 个稳定负对照。

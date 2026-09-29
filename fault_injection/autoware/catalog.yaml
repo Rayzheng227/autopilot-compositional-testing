@@ -1,0 +1,239 @@
+schema_version: 1
+faults:
+  - id: FI-CTRL-003
+    status: validated_causal_ego_fault
+    module: Control
+    package: vehicle_cmd_gate
+    source_file: control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
+    function: VehicleCmdGate::publishControlCommands
+    patch_file: fault_injection/autoware/FI-CTRL-003/vehicle_cmd_gate.cpp.patch
+    injection_point: "after filterControlCommand(), before control_cmd_pub_->publish()"
+    mutation: post_filter_brake_polarity_inversion
+    code_change:
+      original: "publish negative acceleration when braking is requested"
+      faulty: "replace negative acceleration with its positive magnitude and target actual_speed + 5 m/s"
+    parameters:
+      speed_margin_mps: 5.0
+      acceleration_transform: absolute_value
+    activation_condition: "engaged autonomous control, no system emergency, acceleration < 0"
+    activation_oracle: "FI-CTRL-003 activated"
+    expected_responsibility: ego
+    responsibility_basis: "only ego Control differs from the safe clean counterfactual"
+    expected_cctest_verdict: Aa_or_Ae
+    candidate_cases:
+      - vista: merging
+        ve: 10.0
+        xa: 85.0
+        xf: 10.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+    validation_notes:
+      - "Six deterministic source-CS merging cases changed to Aa."
+      - "The one-click experiment recorded rosbags with code-level Ground Truth."
+  - id: FI-CTRL-002
+    status: validated_causal_ego_fault
+    module: Control
+    package: vehicle_cmd_gate
+    source_file: control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
+    function: VehicleCmdGate::publishControlCommands
+    patch_file: fault_injection/autoware/FI-CTRL-002/vehicle_cmd_gate.cpp.patch
+    injection_point: "after filterControlCommand(), before control_cmd_pub_->publish()"
+    mutation: post_filter_longitudinal_command_overwrite
+    code_change:
+      original: "publish the filtered longitudinal command"
+      faulty: "overwrite speed=20.0 m/s and acceleration=3.0 m/s^2 before publish"
+    parameters:
+      speed_mps: 20.0
+      acceleration_mps2: 3.0
+    activation_condition: engaged_autonomous_control_without_system_emergency
+    activation_oracle: "FI-CTRL-002 activated"
+    expected_responsibility: ego
+    responsibility_basis: "only ego Control differs from the safe clean counterfactual"
+    expected_cctest_verdict: Aa
+    candidate_cases:
+      - vista: merging
+        ve: 0.0
+        xa: 200.0
+        xf: 10.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 0.0
+        xa: 200.0
+        xf: 20.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 0.0
+        xa: 205.0
+        xf: 5.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 0.0
+        xa: 210.0
+        xf: 10.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 10.0
+        xa: 85.0
+        xf: 10.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 10.0
+        xa: 85.0
+        xf: 20.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 10.0
+        xa: 90.0
+        xf: 5.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 10.0
+        xa: 95.0
+        xf: 10.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 15.0
+        xa: 85.0
+        xf: 10.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 15.0
+        xa: 85.0
+        xf: 20.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 15.0
+        xa: 90.0
+        xf: 5.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 15.0
+        xa: 125.0
+        xf: 15.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+    validation_notes:
+      - "Twelve deterministic clean safe cases (ten CS and two PS) changed to Aa."
+      - "Representative bags show the final gate command fixed at 20 m/s and +3 m/s^2."
+      - "All twelve runs have rosbags and scene.yaml files with function- and code-level Ground Truth."
+  - id: FI-PLAN-005
+    status: validated_causal_ego_fault
+    module: Planning
+    package: motion_velocity_smoother
+    source_file: planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
+    function: MotionVelocitySmootherNode::publishTrajectory
+    patch_file: fault_injection/autoware/FI-PLAN-005/motion_velocity_smoother_node.cpp.patch
+    injection_point: "after all smoothing and constraints, immediately before final trajectory publish"
+    mutation: final_trajectory_velocity_acceleration_overwrite
+    code_change:
+      original: "publish the dynamically feasible smoothed trajectory"
+      faulty: "overwrite every final point with 40 m/s and +3 m/s^2"
+    parameters:
+      velocity_mps: 40.0
+      acceleration_mps2: 3.0
+      preserve_stop_points: false
+    activation_condition: "final smoothed trajectory is non-empty"
+    activation_oracle: "FI-PLAN-005 activated"
+    expected_responsibility: ego
+    responsibility_basis: "only ego final Planning trajectory differs from the safe clean counterfactual"
+    expected_cctest_verdict: Aa
+    candidate_cases:
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 133.0
+        xf: 7.9
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 10.0
+        xa: 120.0
+        xf: 20.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 132.0
+        xf: 7.9
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 132.0
+        xf: 15.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 134.0
+        xf: 7.9
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 134.0
+        xf: 15.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 136.0
+        xf: 7.9
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 136.0
+        xf: 15.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 138.0
+        xf: 5.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 138.0
+        xf: 15.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 10.0
+        xa: 118.0
+        xf: 15.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 10.0
+        xa: 118.0
+        xf: 25.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 10.0
+        xa: 122.0
+        xf: 15.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 10.0
+        xa: 122.0
+        xf: 25.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+    validation_notes:
+      - "Fourteen deterministic clean PS cases changed to Aa."
+      - "Three adjacent clean PS cases remained PS as negative controls."
+      - "All seventeen runs have rosbags and scene.yaml files with function- and code-level Ground Truth."

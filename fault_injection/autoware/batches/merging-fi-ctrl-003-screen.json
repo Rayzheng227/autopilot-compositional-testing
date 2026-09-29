@@ -1,0 +1,18 @@
+{
+  "fault_id": "FI-CTRL-003",
+  "source": "Safe merging boundary cases previously validated for Control faults",
+  "recording": {
+    "enabled": true,
+    "instance": "v1",
+    "all_topics": true,
+    "output_dir": "/home/ray/AutowareRecordings/FI-CTRL-003/merging-screen"
+  },
+  "cases": [
+    {"vista": "merging", "ve": 0.0, "xa": 200.0, "xf": 10.0, "source_verdict": "CS"},
+    {"vista": "merging", "ve": 0.0, "xa": 200.0, "xf": 20.0, "source_verdict": "CS"},
+    {"vista": "merging", "ve": 0.0, "xa": 205.0, "xf": 5.0, "source_verdict": "CS"},
+    {"vista": "merging", "ve": 0.0, "xa": 210.0, "xf": 10.0, "source_verdict": "CS"},
+    {"vista": "merging", "ve": 10.0, "xa": 85.0, "xf": 10.0, "source_verdict": "CS"},
+    {"vista": "merging", "ve": 10.0, "xa": 85.0, "xf": 20.0, "source_verdict": "CS"}
+  ]
+}
