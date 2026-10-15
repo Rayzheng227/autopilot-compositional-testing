@@ -1,0 +1,19 @@
+diff --git a/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp b/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
+--- a/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
++++ b/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
+@@ -1017,3 +1017,15 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPtr
++  // FI-PRED-001: model an output omission fault after prediction has completed.
++  // Planning receives a valid message with the correct header but no predicted
++  // traffic participants, so the node remains alive and externally healthy.
++  const size_t omitted_objects = output.objects.size();
++  if (omitted_objects > 0) {
++    output.objects.clear();
++    RCLCPP_ERROR_THROTTLE(
++      get_logger(), *get_clock(), 1000,
++      "FI-PRED-001 activated: omitted %zu predicted objects before publish",
++      omitted_objects);
++  }
++
+   // Publish Results
+   pub_objects_->publish(output);
+   pub_debug_markers_->publish(debug_markers);

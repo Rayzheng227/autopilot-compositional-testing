@@ -1,6 +1,3 @@
-{"vista": "crossing_with_yield_signs", "ve": 5.0, "xa": 130.0, "xf": 10.0, "source_verdict": "PS", "fault_verdict": "PS"}
-{"vista": "crossing_with_yield_signs", "ve": 5.0, "xa": 130.0, "xf": 20.0, "source_verdict": "PS", "fault_verdict": "PS"}
-{"vista": "crossing_with_yield_signs", "ve": 5.0, "xa": 130.0, "xf": 40.0, "source_verdict": "PS", "fault_verdict": "PS"}
 {"vista": "crossing_with_yield_signs", "ve": 5.0, "xa": 133.0, "xf": 7.9, "source_verdict": "PS", "fault_verdict": "Aa"}
 {"vista": "crossing_with_yield_signs", "ve": 10.0, "xa": 120.0, "xf": 20.0, "source_verdict": "PS", "fault_verdict": "Aa"}
 {"vista": "crossing_with_yield_signs", "ve": 5.0, "xa": 132.0, "xf": 7.9, "source_verdict": "PS", "fault_verdict": "Aa"}

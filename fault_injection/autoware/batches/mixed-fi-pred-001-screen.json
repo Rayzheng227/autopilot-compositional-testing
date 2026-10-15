@@ -1,0 +1,8 @@
+{
+  "fault_id": "FI-PRED-001",
+  "source": "Validated safe merging and crossing cases requiring conflict-object prediction",
+  "recording": {"enabled": true, "instance": "v1", "all_topics": true, "output_dir": "/home/ray/AutowareRecordings/FI-PRED-001/mixed-screen"},
+  "cases": [
+    {"vista": "merging", "ve": 10.0, "xa": 85.0, "xf": 10.0, "source_verdict": "CS"}
+  ]
+}

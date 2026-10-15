@@ -16,7 +16,49 @@
 |---|---|---|---:|---:|---:|---|
 | FI-CTRL-002 | Control | `VehicleCmdGate::publishControlCommands` | 12 | 12 | 0 | `autoware-cctest-fault:fi-ctrl-002` |
 | FI-CTRL-003 | Control | `VehicleCmdGate::publishControlCommands` | 6 | 6 | 0 | `autoware-cctest-fault:fi-ctrl-003` |
-| FI-PLAN-005 | Planning | `MotionVelocitySmootherNode::publishTrajectory` | 17 | 14 | 3 | `autoware-cctest-fault:fi-plan-005` |
+| FI-CTRL-004 | Control | `VehicleCmdGate::publishControlCommands` | 3 | 3 | 0 | `autoware-cctest-fault:fi-ctrl-004` |
+| FI-PRED-001 | Prediction | `MapBasedPredictionNode::objectsCallback` | 1 | 1 | 0 | `autoware-cctest-fault:fi-pred-001` |
+| FI-PLAN-005 | Planning | `MotionVelocitySmootherNode::publishTrajectory` | 14 | 14 | 0 | `autoware-cctest-fault:fi-plan-005` |
+| FI-PLAN-006 | Planning | `MotionVelocitySmootherNode::publishTrajectory` | 3 | 3 | 0 | `autoware-cctest-fault:fi-plan-006` |
+
+当前正式 batch 只保留确实产生 `Aa` 或 `Ae` 的场景；筛选阶段未触发事故的候选不进入正式结果集。
+
+## FI-PLAN-006：最终停车点抑制
+
+- 修改：在全部速度平滑和停车约束完成后，只把速度不高于 `0.1 m/s` 的停车点改为 `15 m/s`、`+1 m/s²`，其余轨迹点保持原样。
+- 区别：PLAN-005 覆盖整条轨迹；PLAN-006 只删除停车语义，更接近 stop-point omission。
+- 责任依据：相同参数下干净版均为 `PS`，仅 ego 最终 Planning 轨迹的停车点发生变化，结果均为明确 ego 责任的 `Ae`。
+- 补丁：[`FI-PLAN-006/motion_velocity_smoother_node.cpp.patch`](FI-PLAN-006/motion_velocity_smoother_node.cpp.patch)
+
+| vista | ve | xa | xf | 干净结果 | 故障结果 |
+|---|---:|---:|---:|:---:|:---:|
+| crossing_with_yield_signs | 5 | 133 | 7.9 | PS | Ae |
+| crossing_with_yield_signs | 5 | 138 | 5 | PS | Ae |
+| crossing_with_yield_signs | 10 | 120 | 20 | PS | Ae |
+
+## FI-PRED-001：预测对象输出遗漏
+
+- 修改：Map-based Prediction 正常计算后、发布前清空 `PredictedObjects.objects`，保留消息 header 和节点生命周期。
+- 故障语义：计算成功但输出对象遗漏，Planning 因而看不到冲突车辆。
+- 责任依据：外部车辆轨迹和场景参数不变，只有 ego Prediction 输出不同；干净版 `CS`，故障版 `Aa`。
+- 补丁：[`FI-PRED-001/map_based_prediction_node.cpp.patch`](FI-PRED-001/map_based_prediction_node.cpp.patch)
+
+| vista | ve | xa | xf | 干净结果 | 故障结果 |
+|---|---:|---:|---:|:---:|:---:|
+| merging | 10 | 85 | 10 | CS | Aa |
+
+## FI-CTRL-004：最终制动命令遗漏
+
+- 修改：Gate 最终命令请求负加速度时，将加速度替换为零，并让目标速度至少保持实际 ego 速度。
+- 区别：CTRL-002 是固定强加速，CTRL-003 是制动符号反转，CTRL-004 是制动命令丢失/滑行。
+- 责任依据：干净版均为 `CS`，只有 ego 最终制动命令被丢弃，故障版出现 `Ae/Aa`。
+- 补丁：[`FI-CTRL-004/vehicle_cmd_gate.cpp.patch`](FI-CTRL-004/vehicle_cmd_gate.cpp.patch)
+
+| vista | ve | xa | xf | 干净结果 | 故障结果 |
+|---|---:|---:|---:|:---:|:---:|
+| merging | 0 | 200 | 10 | CS | Ae |
+| merging | 10 | 85 | 10 | CS | Aa |
+| merging | 15 | 85 | 20 | CS | Aa |
 
 ## FI-CTRL-002：Gate 后纵向命令覆盖
 
@@ -96,9 +138,6 @@
 
 | ve | xa | xf | 干净结果 | 故障结果 | 类型 |
 |---:|---:|---:|:---:|:---:|---|
-| 5 | 130 | 10 | PS | PS | 负对照 |
-| 5 | 130 | 20 | PS | PS | 负对照 |
-| 5 | 130 | 40 | PS | PS | 负对照 |
 | 5 | 132 | 7.9 | PS | Aa | 严格成功 |
 | 5 | 132 | 15 | PS | Aa | 严格成功 |
 | 5 | 133 | 7.9 | PS | Aa | 严格成功 |
@@ -118,7 +157,7 @@
 
 ## 对外发布核心代码
 
-推荐公开本目录，而不是发布三份完整 Autoware fork：
+推荐公开本目录，而不是为每个故障发布一份完整 Autoware fork：
 
 1. 补丁文件精确表示代码级 Ground Truth，可直接审查修改行。
 2. 每个 Dockerfile 从同一干净基准构建，确保版本可复现。

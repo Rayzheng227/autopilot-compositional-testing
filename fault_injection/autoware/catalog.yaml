@@ -1,5 +1,121 @@
 schema_version: 1
 faults:
+  - id: FI-PLAN-006
+    status: validated_causal_ego_fault
+    module: Planning
+    package: motion_velocity_smoother
+    source_file: planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
+    function: MotionVelocitySmootherNode::publishTrajectory
+    patch_file: fault_injection/autoware/FI-PLAN-006/motion_velocity_smoother_node.cpp.patch
+    injection_point: "after all smoothing and stop constraints, immediately before final trajectory publish"
+    mutation: final_stop_point_suppression
+    code_change:
+      original: "preserve stop and near-stop points in the final trajectory"
+      faulty: "replace points at or below 0.1 m/s with 15 m/s and +1 m/s^2"
+    parameters:
+      stop_threshold_mps: 0.1
+      replacement_velocity_mps: 15.0
+      replacement_acceleration_mps2: 1.0
+    activation_condition: "final trajectory contains at least one point at or below 0.1 m/s"
+    activation_oracle: "FI-PLAN-006 activated"
+    expected_responsibility: ego
+    responsibility_basis: "only ego final Planning stop points differ from the safe clean counterfactual"
+    expected_cctest_verdict: Aa_or_Ae
+    candidate_cases:
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 133.0
+        xf: 7.9
+        verified_clean_verdict: PS
+        faulty_verdict: Ae
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 138.0
+        xf: 5.0
+        verified_clean_verdict: PS
+        faulty_verdict: Ae
+      - vista: crossing_with_yield_signs
+        ve: 10.0
+        xa: 120.0
+        xf: 20.0
+        verified_clean_verdict: PS
+        faulty_verdict: Ae
+    validation_notes:
+      - "Three deterministic clean PS crossing cases changed to ego-fault Ae."
+      - "All retained runs have rosbags and scene.yaml files with function- and code-level Ground Truth."
+  - id: FI-PRED-001
+    status: validated_causal_ego_fault
+    module: Prediction
+    package: map_based_prediction
+    source_file: perception/map_based_prediction/src/map_based_prediction_node.cpp
+    function: MapBasedPredictionNode::objectsCallback
+    patch_file: fault_injection/autoware/FI-PRED-001/map_based_prediction_node.cpp.patch
+    injection_point: "after prediction completes, immediately before PredictedObjects publish"
+    mutation: predicted_object_output_omission
+    code_change:
+      original: "publish all computed predicted traffic participants"
+      faulty: "publish a valid PredictedObjects message with an empty objects array"
+    parameters:
+      retained_objects: 0
+      preserve_header: true
+    activation_condition: "computed prediction output contains one or more objects"
+    activation_oracle: "FI-PRED-001 activated"
+    expected_responsibility: ego
+    responsibility_basis: "only ego Prediction output differs; the external traffic and scenario are unchanged"
+    expected_cctest_verdict: Aa_or_Ae
+    candidate_cases:
+      - vista: merging
+        ve: 10.0
+        xa: 85.0
+        xf: 10.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+    validation_notes:
+      - "One deterministic clean CS merging case changed to Aa."
+      - "Two non-failing candidates were removed from the retained scene set."
+      - "The retained run has a rosbag and scene.yaml with function- and code-level Ground Truth."
+  - id: FI-CTRL-004
+    status: validated_causal_ego_fault
+    module: Control
+    package: vehicle_cmd_gate
+    source_file: control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
+    function: VehicleCmdGate::publishControlCommands
+    patch_file: fault_injection/autoware/FI-CTRL-004/vehicle_cmd_gate.cpp.patch
+    injection_point: "after filterControlCommand(), before control_cmd_pub_->publish()"
+    mutation: post_filter_brake_command_omission
+    code_change:
+      original: "publish the final negative acceleration command"
+      faulty: "replace negative acceleration with zero and hold at least current ego speed"
+    parameters:
+      replacement_acceleration_mps2: 0.0
+      minimum_target_speed: actual_ego_speed
+    activation_condition: "engaged autonomous control, no system emergency, final acceleration < 0"
+    activation_oracle: "FI-CTRL-004 activated"
+    expected_responsibility: ego
+    responsibility_basis: "only ego final Control brake command differs from the safe clean counterfactual"
+    expected_cctest_verdict: Aa_or_Ae
+    candidate_cases:
+      - vista: merging
+        ve: 0.0
+        xa: 200.0
+        xf: 10.0
+        verified_clean_verdict: CS
+        faulty_verdict: Ae
+      - vista: merging
+        ve: 10.0
+        xa: 85.0
+        xf: 10.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 15.0
+        xa: 85.0
+        xf: 20.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+    validation_notes:
+      - "Three deterministic clean CS merging cases changed to collision verdicts (one Ae, two Aa)."
+      - "All retained runs have rosbags and scene.yaml files with function- and code-level Ground Truth."
   - id: FI-CTRL-003
     status: validated_causal_ego_fault
     module: Control
@@ -235,5 +351,4 @@ faults:
         faulty_verdict: Aa
     validation_notes:
       - "Fourteen deterministic clean PS cases changed to Aa."
-      - "Three adjacent clean PS cases remained PS as negative controls."
-      - "All seventeen runs have rosbags and scene.yaml files with function- and code-level Ground Truth."
+      - "All fourteen retained runs have rosbags and scene.yaml files with function- and code-level Ground Truth."
