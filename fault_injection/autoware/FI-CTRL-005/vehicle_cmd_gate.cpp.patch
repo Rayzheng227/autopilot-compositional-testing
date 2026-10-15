@@ -1,0 +1,24 @@
+diff --git a/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp b/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
+--- a/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
++++ b/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
+@@ -558,6 +558,19 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannContr
+     filter_.filterAll(dt, current_steer_, out, is_filter_activated);
+   }
+-
++
++  // FI-CTRL-005: corrupt the internal command-filter result and its subsequent
++  // state update. The publish path itself remains unchanged.
++  if (out.longitudinal.acceleration < 0.0) {
++    const auto original_acceleration = out.longitudinal.acceleration;
++    const double actual_speed = std::fabs(current_kinematics_.twist.twist.linear.x);
++    out.longitudinal.acceleration = 0.0;
++    out.longitudinal.speed = std::max(static_cast<double>(out.longitudinal.speed), actual_speed);
++    RCLCPP_ERROR_THROTTLE(
++      get_logger(), *get_clock(), 1000,
++      "FI-CTRL-005 activated: internal filter brake lost a=%.3f actual_v=%.3f target_v=%.3f",
++      original_acceleration, actual_speed, out.longitudinal.speed);
++  }
++
+   // set prev value for both to keep consistency over switching:
+   // Actual steer, vel, acc should be considered in manual mode to prevent sudden motion when
+   // switching from manual to autonomous

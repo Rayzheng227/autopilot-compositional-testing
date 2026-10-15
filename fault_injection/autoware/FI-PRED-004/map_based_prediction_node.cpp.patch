@@ -1,0 +1,21 @@
+diff --git a/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp b/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
+--- a/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
++++ b/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
+@@ -869,6 +869,16 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPtr
+   for (const auto & object : in_objects->objects) {
+     std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
+     TrackedObject transformed_object = object;
++    auto & tracked_velocity = transformed_object.kinematics.twist_with_covariance.twist.linear;
++    const double measured_speed = std::hypot(tracked_velocity.x, tracked_velocity.y);
++    if (measured_speed > 0.1) {
++      tracked_velocity.x = 0.0;
++      tracked_velocity.y = 0.0;
++      RCLCPP_ERROR_THROTTLE(
++        get_logger(), *get_clock(), 1000,
++        "FI-PRED-004 activated: tracked velocity dropped object=%s measured_speed=%.3f",
++        object_id.c_str(), measured_speed);
++    }
+-
++
+     // transform object frame if it's based on map frame
+     if (in_objects->header.frame_id != "map") {

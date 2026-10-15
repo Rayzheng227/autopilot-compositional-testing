@@ -1,0 +1,13 @@
+{
+  "ve": 0.0,
+  "xf": 10.0,
+  "xa": 200.0,
+  "verdict": "Ae",
+  "safety_issues": [
+    "ego_fault"
+  ],
+  "simulation_time": 39.16441893577576,
+  "checking_time": 0.16710162162780762,
+  "fault_id": "FI-CTRL-005",
+  "source_verdict": "CS"
+}

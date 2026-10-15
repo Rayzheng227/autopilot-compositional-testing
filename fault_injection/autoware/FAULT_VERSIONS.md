@@ -17,14 +17,55 @@
 | FI-CTRL-002 | Control | `VehicleCmdGate::publishControlCommands` | 12 | 12 | 0 | `autoware-cctest-fault:fi-ctrl-002` |
 | FI-CTRL-003 | Control | `VehicleCmdGate::publishControlCommands` | 6 | 6 | 0 | `autoware-cctest-fault:fi-ctrl-003` |
 | FI-CTRL-004 | Control | `VehicleCmdGate::publishControlCommands` | 3 | 3 | 0 | `autoware-cctest-fault:fi-ctrl-004` |
+| FI-CTRL-005 | Control | `VehicleCmdGate::filterControlCommand` | 2 | 2 | 0 | `autoware-cctest-fault:fi-ctrl-005` |
 | FI-PRED-001 | Prediction | `MapBasedPredictionNode::objectsCallback` | 1 | 1 | 0 | `autoware-cctest-fault:fi-pred-001` |
 | FI-PRED-002 | Prediction | `MapBasedPredictionNode::objectsCallback` | 2 | 2 | 0 | `autoware-cctest-fault:fi-pred-002` |
 | FI-PRED-003 | Prediction | `MapBasedPredictionNode::objectsCallback` | 3 | 3 | 0 | `autoware-cctest-fault:fi-pred-003` |
+| FI-PRED-004 | Prediction | `MapBasedPredictionNode::objectsCallback` | 2 | 2 | 0 | `autoware-cctest-fault:fi-pred-004` |
 | FI-PLAN-005 | Planning | `MotionVelocitySmootherNode::publishTrajectory` | 14 | 14 | 0 | `autoware-cctest-fault:fi-plan-005` |
 | FI-PLAN-006 | Planning | `MotionVelocitySmootherNode::publishTrajectory` | 3 | 3 | 0 | `autoware-cctest-fault:fi-plan-006` |
 | FI-PLAN-007 | Planning | `MotionVelocitySmootherNode::publishTrajectory` | 2 | 2 | 0 | `autoware-cctest-fault:fi-plan-007` |
+| FI-PLAN-008 | Planning | `MotionVelocitySmootherNode::calcTrajectoryVelocity` | 2 | 2 | 0 | `autoware-cctest-fault:fi-plan-008` |
 
-当前正式 batch 只保留确实产生 `Aa` 或 `Ae` 的场景；筛选阶段未触发事故的候选不进入正式结果集。
+当前共有 12 个验证通过的故障版本、52 个严格成功场景。正式 batch 只保留确实产生 `Aa` 或 `Ae` 的场景；筛选阶段未触发事故的候选不进入正式结果集。
+
+## 新增：非发布出口故障
+
+### FI-PLAN-008：优化器输入停车约束删除
+
+- 修改函数：`MotionVelocitySmootherNode::calcTrajectoryVelocity`。
+- 修改：在速度优化前，把内部轨迹中不高于 `0.1 m/s` 的停车约束替换为 `15 m/s`；最终发布函数不变。
+- 结果：2 个 `crossing_with_yield_signs` 场景均由 clean `PS` 变为 ego 责任 `Aa`。
+- 补丁：[`FI-PLAN-008/motion_velocity_smoother_node.cpp.patch`](FI-PLAN-008/motion_velocity_smoother_node.cpp.patch)
+
+| ve | xa | xf | 干净结果 | 故障结果 |
+|---:|---:|---:|:---:|:---:|
+| 5 | 133 | 7.9 | PS | Aa |
+| 10 | 120 | 20 | PS | Aa |
+
+### FI-PRED-004：跟踪速度观测丢失
+
+- 修改函数：`MapBasedPredictionNode::objectsCallback`。
+- 修改：复制跟踪对象后即将其内部平面速度置零，再执行坐标变换、地图匹配、行为判断和路径生成；预测发布代码不变。
+- 结果：2 个 `merging` 场景均由 clean `CS` 变为 ego 责任 `Aa`。
+- 补丁：[`FI-PRED-004/map_based_prediction_node.cpp.patch`](FI-PRED-004/map_based_prediction_node.cpp.patch)
+
+| ve | xa | xf | 干净结果 | 故障结果 |
+|---:|---:|---:|:---:|:---:|
+| 10 | 85 | 20 | CS | Aa |
+| 15 | 85 | 20 | CS | Aa |
+
+### FI-CTRL-005：滤波器内部制动丢失
+
+- 修改函数：`VehicleCmdGate::filterControlCommand`。
+- 修改：滤波结果要求制动时，在滤波函数内部改为滑行，并让错误结果进入后续滤波状态；控制发布函数不变。
+- 结果：2 个 `merging` 场景由 clean `CS` 分别变为 ego 责任 `Ae`、`Aa`。
+- 补丁：[`FI-CTRL-005/vehicle_cmd_gate.cpp.patch`](FI-CTRL-005/vehicle_cmd_gate.cpp.patch)
+
+| ve | xa | xf | 干净结果 | 故障结果 |
+|---:|---:|---:|:---:|:---:|
+| 0 | 200 | 10 | CS | Ae |
+| 10 | 85 | 10 | CS | Aa |
 
 ## FI-PLAN-007：最终轨迹加性速度偏置
 

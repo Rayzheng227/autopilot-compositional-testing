@@ -1,0 +1,13 @@
+{
+  "ve": 15.0,
+  "xf": 20.0,
+  "xa": 85.0,
+  "verdict": "Aa",
+  "safety_issues": [
+    "arriving_fault"
+  ],
+  "simulation_time": 9.314121961593628,
+  "checking_time": 0.13818359375,
+  "fault_id": "FI-PRED-004",
+  "source_verdict": "CS"
+}

@@ -1,0 +1,28 @@
+diff --git a/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp b/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
+--- a/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
++++ b/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
+@@ -557,6 +557,23 @@ const TrajectoryPoints & traj_input) const
+   // Apply velocity to approach stop point
+   applyStopApproachingVelocity(traj_extracted);
+-
++
++  // FI-PLAN-008: corrupt the optimizer input constraint set, rather than the
++  // final published message, by deleting all stop/near-stop velocity targets.
++  constexpr float kStopThresholdMps = 0.1F;
++  constexpr float kReplacementVelocityMps = 15.0F;
++  size_t deleted_stop_constraints = 0;
++  for (auto & point : traj_extracted) {
++    if (point.longitudinal_velocity_mps <= kStopThresholdMps) {
++      point.longitudinal_velocity_mps = kReplacementVelocityMps;
++      ++deleted_stop_constraints;
++    }
++  }
++  if (deleted_stop_constraints > 0) {
++    RCLCPP_ERROR(
++      get_logger(), "FI-PLAN-008 activated: deleted %zu optimizer stop constraints",
++      deleted_stop_constraints);
++  }
++
+   // Debug
+   if (publish_debug_trajs_) {
+     auto tmp = traj_extracted;
