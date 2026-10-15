@@ -1,0 +1,13 @@
+{
+  "ve": 5.0,
+  "xf": 5.0,
+  "xa": 138.0,
+  "verdict": "Ae",
+  "safety_issues": [
+    "ego_fault"
+  ],
+  "simulation_time": 34.39840912818909,
+  "checking_time": 0.1341993808746338,
+  "fault_id": "FI-PLAN-006",
+  "source_verdict": "PS"
+}

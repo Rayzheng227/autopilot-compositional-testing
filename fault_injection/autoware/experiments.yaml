@@ -6,6 +6,24 @@ defaults:
     all_topics: true
     output_root: /home/ray/AutowareRecordings
 faults:
+  - id: FI-PLAN-006
+    name: 最终停车点抑制
+    enabled: true
+    image: autoware-cctest-fault:fi-plan-006
+    batch_file: fault_injection/autoware/batches/crossing-fi-plan-006-screen.json
+    description: 仅删除最终 Planning 轨迹中的停车语义；3 个 clean PS 场景全部变为 ego-fault Ae。
+  - id: FI-PRED-001
+    name: 预测对象输出遗漏
+    enabled: true
+    image: autoware-cctest-fault:fi-pred-001
+    batch_file: fault_injection/autoware/batches/mixed-fi-pred-001-screen.json
+    description: Prediction 正常运行但发布空对象列表；保留的 clean CS 场景变为 Aa。
+  - id: FI-CTRL-004
+    name: 最终制动命令遗漏
+    enabled: true
+    image: autoware-cctest-fault:fi-ctrl-004
+    batch_file: fault_injection/autoware/batches/merging-fi-ctrl-004-screen.json
+    description: Gate 最终负加速度被替换为零；3 个 clean CS 场景全部发生 ego 责任碰撞。
   - id: FI-CTRL-003
     name: 制动命令符号反转
     enabled: true
@@ -23,4 +41,4 @@ faults:
     enabled: true
     image: autoware-cctest-fault:fi-plan-005
     batch_file: fault_injection/autoware/batches/crossing-fi-plan-005-search.json
-    description: 在速度平滑与停车约束之后覆盖最终轨迹；14 个确定性 clean PS 场景变为 Aa，另有 3 个稳定负对照。
+    description: 在速度平滑与停车约束之后覆盖最终轨迹；保留的 14 个确定性 clean PS 场景全部变为 Aa。

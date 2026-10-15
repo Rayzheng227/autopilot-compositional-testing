@@ -1,0 +1,10 @@
+{
+  "fault_id": "FI-PLAN-006",
+  "source": "Validated clean-PS crossing cases around the yield boundary",
+  "recording": {"enabled": true, "instance": "v1", "all_topics": true, "output_dir": "/home/ray/AutowareRecordings/FI-PLAN-006/crossing-screen"},
+  "cases": [
+    {"vista": "crossing_with_yield_signs", "ve": 5.0, "xa": 133.0, "xf": 7.9, "source_verdict": "PS"},
+    {"vista": "crossing_with_yield_signs", "ve": 5.0, "xa": 138.0, "xf": 5.0, "source_verdict": "PS"},
+    {"vista": "crossing_with_yield_signs", "ve": 10.0, "xa": 120.0, "xf": 20.0, "source_verdict": "PS"}
+  ]
+}

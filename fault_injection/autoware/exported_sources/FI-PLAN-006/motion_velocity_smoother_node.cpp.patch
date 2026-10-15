@@ -1,0 +1,30 @@
+diff --git a/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp b/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
+--- a/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
++++ b/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
+@@ -311,5 +311,26 @@ void MotionVelocitySmootherNode::publishTrajectory(const TrajectoryPoints & traje
+ {
+   Trajectory publishing_trajectory = motion_utils::convertToTrajectory(trajectory);
+   publishing_trajectory.header = base_traj_raw_ptr_->header;
++
++  // FI-PLAN-006: suppress only final stop/near-stop points after all normal
++  // velocity, acceleration, jerk, and stop constraints have been applied.
++  constexpr float kStopThresholdMps = 0.1F;
++  constexpr float kInjectedVelocityMps = 15.0F;
++  constexpr float kInjectedAccelerationMps2 = 1.0F;
++  size_t suppressed_points = 0;
++  for (auto & point : publishing_trajectory.points) {
++    if (point.longitudinal_velocity_mps <= kStopThresholdMps) {
++      point.longitudinal_velocity_mps = kInjectedVelocityMps;
++      point.acceleration_mps2 = kInjectedAccelerationMps2;
++      ++suppressed_points;
++    }
++  }
++  if (suppressed_points > 0) {
++    RCLCPP_ERROR(
++      get_logger(),
++      "FI-PLAN-006 activated: suppressed %zu stop points velocity=%.1f acceleration=%.1f",
++      suppressed_points, kInjectedVelocityMps, kInjectedAccelerationMps2);
++  }
++
+   pub_trajectory_->publish(publishing_trajectory);
+ }
