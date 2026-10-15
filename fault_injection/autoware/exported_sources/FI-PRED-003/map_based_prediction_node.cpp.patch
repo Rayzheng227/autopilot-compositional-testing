@@ -1,0 +1,29 @@
+diff --git a/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp b/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
+--- a/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
++++ b/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
+@@ -1017,3 +1017,25 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPtr
++  constexpr double kPositionOffsetM = 1000.0;
++  size_t displaced_objects = 0;
++  size_t displaced_poses = 0;
++  for (auto & object : output.objects) {
++    auto & position = object.kinematics.initial_pose_with_covariance.pose.position;
++    position.x += kPositionOffsetM;
++    position.y += kPositionOffsetM;
++    ++displaced_objects;
++    for (auto & predicted_path : object.kinematics.predicted_paths) {
++      for (auto & pose : predicted_path.path) {
++        pose.position.x += kPositionOffsetM;
++        pose.position.y += kPositionOffsetM;
++        ++displaced_poses;
++      }
++    }
++  }
++  if (displaced_objects > 0) {
++    RCLCPP_ERROR_THROTTLE(
++      get_logger(), *get_clock(), 1000,
++      "FI-PRED-003 activated: displaced %zu objects and %zu path poses by %.1f m",
++      displaced_objects, displaced_poses, kPositionOffsetM);
++  }
+   // Publish Results
+   pub_objects_->publish(output);
+   pub_debug_markers_->publish(debug_markers);

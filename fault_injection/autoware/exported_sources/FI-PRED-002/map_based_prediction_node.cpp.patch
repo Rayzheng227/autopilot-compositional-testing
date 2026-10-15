@@ -1,0 +1,28 @@
+diff --git a/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp b/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
+--- a/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
++++ b/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
+@@ -1017,3 +1017,24 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPtr
++  size_t frozen_paths = 0;
++  size_t frozen_poses = 0;
++  for (auto & object : output.objects) {
++    const auto frozen_pose = object.kinematics.initial_pose_with_covariance.pose;
++    object.kinematics.initial_twist_with_covariance.twist.linear.x = 0.0;
++    object.kinematics.initial_twist_with_covariance.twist.linear.y = 0.0;
++    for (auto & predicted_path : object.kinematics.predicted_paths) {
++      ++frozen_paths;
++      for (auto & pose : predicted_path.path) {
++        pose = frozen_pose;
++        ++frozen_poses;
++      }
++    }
++  }
++  if (frozen_poses > 0) {
++    RCLCPP_ERROR_THROTTLE(
++      get_logger(), *get_clock(), 1000,
++      "FI-PRED-002 activated: froze %zu paths and %zu predicted poses",
++      frozen_paths, frozen_poses);
++  }
++
+   // Publish Results
+   pub_objects_->publish(output);
+   pub_debug_markers_->publish(debug_markers);

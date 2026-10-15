@@ -1,0 +1,22 @@
+diff --git a/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp b/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
+--- a/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
++++ b/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
+@@ -311,5 +311,18 @@ void MotionVelocitySmootherNode::publishTrajectory(const TrajectoryPoints & traje
+ {
+   Trajectory publishing_trajectory = motion_utils::convertToTrajectory(trajectory);
+   publishing_trajectory.header = base_traj_raw_ptr_->header;
++  constexpr float kVelocityBiasMps = 20.0F;
++  const size_t point_count = publishing_trajectory.points.size();
++  float maximum_before = 0.0F;
++  for (auto & point : publishing_trajectory.points) {
++    maximum_before = std::max(maximum_before, point.longitudinal_velocity_mps);
++    point.longitudinal_velocity_mps += kVelocityBiasMps;
++  }
++  if (point_count > 0) {
++    RCLCPP_ERROR(
++      get_logger(),
++      "FI-PLAN-007 activated: biased %zu trajectory points by +%.1f m/s max_before=%.3f",
++      point_count, kVelocityBiasMps, maximum_before);
++  }
+   pub_trajectory_->publish(publishing_trajectory);
+ }

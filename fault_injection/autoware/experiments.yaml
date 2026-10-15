@@ -6,6 +6,24 @@ defaults:
     all_topics: true
     output_root: /home/ray/AutowareRecordings
 faults:
+  - id: FI-PLAN-007
+    name: 最终轨迹速度偏置
+    enabled: true
+    image: autoware-cctest-fault:fi-plan-007
+    batch_file: fault_injection/autoware/batches/crossing-fi-plan-007-screen.json
+    description: 最终轨迹速度统一增加 20 m/s；2 个 clean PS 场景全部变为 Aa。
+  - id: FI-PRED-002
+    name: 动态预测冻结
+    enabled: true
+    image: autoware-cctest-fault:fi-pred-002
+    batch_file: fault_injection/autoware/batches/merging-fi-pred-002-screen.json
+    description: 将动态对象的预测路径冻结在当前位姿；保留的 2 个 clean CS 场景全部变为 Aa。
+  - id: FI-PRED-003
+    name: 预测对象空间偏移
+    enabled: true
+    image: autoware-cctest-fault:fi-pred-003
+    batch_file: fault_injection/autoware/batches/merging-fi-pred-003-screen.json
+    description: 将预测对象及路径平移到错误地图位置；3 个 clean CS 场景全部变为 Aa。
   - id: FI-PLAN-006
     name: 最终停车点抑制
     enabled: true
