@@ -18,10 +18,34 @@
 | FI-CTRL-003 | Control | `VehicleCmdGate::publishControlCommands` | 6 | 6 | 0 | `autoware-cctest-fault:fi-ctrl-003` |
 | FI-CTRL-004 | Control | `VehicleCmdGate::publishControlCommands` | 3 | 3 | 0 | `autoware-cctest-fault:fi-ctrl-004` |
 | FI-PRED-001 | Prediction | `MapBasedPredictionNode::objectsCallback` | 1 | 1 | 0 | `autoware-cctest-fault:fi-pred-001` |
+| FI-PRED-002 | Prediction | `MapBasedPredictionNode::objectsCallback` | 2 | 2 | 0 | `autoware-cctest-fault:fi-pred-002` |
+| FI-PRED-003 | Prediction | `MapBasedPredictionNode::objectsCallback` | 3 | 3 | 0 | `autoware-cctest-fault:fi-pred-003` |
 | FI-PLAN-005 | Planning | `MotionVelocitySmootherNode::publishTrajectory` | 14 | 14 | 0 | `autoware-cctest-fault:fi-plan-005` |
 | FI-PLAN-006 | Planning | `MotionVelocitySmootherNode::publishTrajectory` | 3 | 3 | 0 | `autoware-cctest-fault:fi-plan-006` |
+| FI-PLAN-007 | Planning | `MotionVelocitySmootherNode::publishTrajectory` | 2 | 2 | 0 | `autoware-cctest-fault:fi-plan-007` |
 
 当前正式 batch 只保留确实产生 `Aa` 或 `Ae` 的场景；筛选阶段未触发事故的候选不进入正式结果集。
+
+## FI-PLAN-007：最终轨迹加性速度偏置
+
+- 修改：对全部最终轨迹点增加 `+20 m/s`，保留轨迹几何和点间相对速度差。
+- 区别：PLAN-005 固定覆盖速度，PLAN-006 只删除停车点，PLAN-007 模拟系统性加性速度偏差。
+- 结果：2 个 `crossing_with_yield_signs` 场景均由 `PS` 变为 `Aa`。
+- 补丁：[`FI-PLAN-007/motion_velocity_smoother_node.cpp.patch`](FI-PLAN-007/motion_velocity_smoother_node.cpp.patch)
+
+## FI-PRED-002：动态预测冻结
+
+- 修改：把每条预测路径的所有 pose 固定在对象当前 pose，并把预测初始速度设为零。
+- 区别：PRED-001 删除对象；PRED-002 保留对象但错误地认为其静止。
+- 结果：保留 2 个 `merging` 场景，均由 `CS` 变为 `Aa`。
+- 补丁：[`FI-PRED-002/map_based_prediction_node.cpp.patch`](FI-PRED-002/map_based_prediction_node.cpp.patch)
+
+## FI-PRED-003：预测对象空间偏移
+
+- 修改：发布前把对象当前位置与全部路径点在地图 X、Y 方向各平移 `+1000 m`。
+- 区别：对象和路径仍然存在，但空间位置与真实交通参与者完全不一致。
+- 结果：3 个 `merging` 场景均由 `CS` 变为 `Aa`。
+- 补丁：[`FI-PRED-003/map_based_prediction_node.cpp.patch`](FI-PRED-003/map_based_prediction_node.cpp.patch)
 
 ## FI-PLAN-006：最终停车点抑制
 
