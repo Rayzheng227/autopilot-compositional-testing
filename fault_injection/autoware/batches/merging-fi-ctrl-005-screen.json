@@ -1,0 +1,9 @@
+{
+  "fault_id": "FI-CTRL-005",
+  "source": "Validated clean-CS merging cases with internal filter braking",
+  "recording": {"enabled": true, "instance": "v1", "all_topics": true, "output_dir": "/home/ray/AutowareRecordings/FI-CTRL-005/merging-screen"},
+  "cases": [
+    {"vista": "merging", "ve": 0.0, "xa": 200.0, "xf": 10.0, "source_verdict": "CS"},
+    {"vista": "merging", "ve": 10.0, "xa": 85.0, "xf": 10.0, "source_verdict": "CS"}
+  ]
+}

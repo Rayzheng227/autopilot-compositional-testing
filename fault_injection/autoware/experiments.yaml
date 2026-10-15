@@ -6,6 +6,24 @@ defaults:
     all_topics: true
     output_root: /home/ray/AutowareRecordings
 faults:
+  - id: FI-PLAN-008
+    name: 优化器输入停车约束删除
+    enabled: true
+    image: autoware-cctest-fault:fi-plan-008
+    batch_file: fault_injection/autoware/batches/crossing-fi-plan-008-screen.json
+    description: 在速度优化前删除内部停车约束，不修改最终发布消息；2 个 clean PS 场景均变为 Aa。
+  - id: FI-PRED-004
+    name: 跟踪速度观测丢失
+    enabled: true
+    image: autoware-cctest-fault:fi-pred-004
+    batch_file: fault_injection/autoware/batches/merging-fi-pred-004-screen.json
+    description: 在地图匹配与路径预测前将内部跟踪速度置零，不修改预测发布消息；2 个 clean CS 场景均变为 Aa。
+  - id: FI-CTRL-005
+    name: 滤波器内部制动丢失
+    enabled: true
+    image: autoware-cctest-fault:fi-ctrl-005
+    batch_file: fault_injection/autoware/batches/merging-fi-ctrl-005-screen.json
+    description: 在控制命令滤波函数内丢弃制动并污染后续滤波状态，不修改发布函数；2 个 clean CS 场景变为 Ae/Aa。
   - id: FI-PLAN-007
     name: 最终轨迹速度偏置
     enabled: true

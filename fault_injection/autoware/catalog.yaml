@@ -1,5 +1,116 @@
 schema_version: 1
 faults:
+  - id: FI-PLAN-008
+    status: validated_causal_ego_fault
+    module: Planning
+    package: motion_velocity_smoother
+    source_file: planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
+    function: MotionVelocitySmootherNode::calcTrajectoryVelocity
+    patch_file: fault_injection/autoware/FI-PLAN-008/motion_velocity_smoother_node.cpp.patch
+    injection_point: "after stop-approach constraints are applied, before the velocity optimizer"
+    mutation: optimizer_input_stop_constraint_deletion
+    code_change:
+      original: "send stop and near-stop velocity targets to the smoother"
+      faulty: "replace stop and near-stop targets with 15 m/s before smoothing"
+    parameters:
+      stop_threshold_mps: 0.1
+      replacement_velocity_mps: 15.0
+    activation_condition: "optimizer input contains at least one stop or near-stop point"
+    activation_oracle: "FI-PLAN-008 activated"
+    expected_responsibility: ego
+    responsibility_basis: "only ego Planning optimizer input differs; the scenario and output publisher are unchanged"
+    expected_cctest_verdict: Aa_or_Ae
+    candidate_cases:
+      - vista: crossing_with_yield_signs
+        ve: 5.0
+        xa: 133.0
+        xf: 7.9
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+      - vista: crossing_with_yield_signs
+        ve: 10.0
+        xa: 120.0
+        xf: 20.0
+        verified_clean_verdict: PS
+        faulty_verdict: Aa
+    validation_notes:
+      - "Two deterministic clean PS cases changed to ego-fault Aa."
+      - "The mutation is upstream of the optimizer; final publication code is unchanged."
+      - "All retained runs have rosbags and scene.yaml files with function- and code-level Ground Truth."
+  - id: FI-PRED-004
+    status: validated_causal_ego_fault
+    module: Prediction
+    package: map_based_prediction
+    source_file: perception/map_based_prediction/src/map_based_prediction_node.cpp
+    function: MapBasedPredictionNode::objectsCallback
+    patch_file: fault_injection/autoware/FI-PRED-004/map_based_prediction_node.cpp.patch
+    injection_point: "immediately after copying a tracked object, before transform, map association, maneuver inference, and path generation"
+    mutation: tracked_velocity_dropout
+    code_change:
+      original: "prediction consumes the measured tracked-object velocity"
+      faulty: "zero the internal tracked-object planar velocity before prediction"
+    parameters:
+      replacement_velocity_mps: 0.0
+      activation_speed_threshold_mps: 0.1
+    activation_condition: "tracked object planar speed exceeds 0.1 m/s"
+    activation_oracle: "FI-PRED-004 activated"
+    expected_responsibility: ego
+    responsibility_basis: "only ego Prediction input processing differs; the tracked-object publisher and scenario are unchanged"
+    expected_cctest_verdict: Aa_or_Ae
+    candidate_cases:
+      - vista: merging
+        ve: 10.0
+        xa: 85.0
+        xf: 20.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+      - vista: merging
+        ve: 15.0
+        xa: 85.0
+        xf: 20.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+    validation_notes:
+      - "Two deterministic clean CS cases changed to ego-fault Aa."
+      - "The mutation precedes map association and path generation; published messages are not edited."
+      - "All retained runs have rosbags and scene.yaml files with function- and code-level Ground Truth."
+  - id: FI-CTRL-005
+    status: validated_causal_ego_fault
+    module: Control
+    package: vehicle_cmd_gate
+    source_file: control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
+    function: VehicleCmdGate::filterControlCommand
+    patch_file: fault_injection/autoware/FI-CTRL-005/vehicle_cmd_gate.cpp.patch
+    injection_point: "inside command filtering, before filter state is stored and before the publish function"
+    mutation: internal_filtered_brake_loss
+    code_change:
+      original: "retain negative acceleration produced by the command filter"
+      faulty: "replace the internal filtered braking result with coasting and retain at least actual speed"
+    parameters:
+      replacement_acceleration_mps2: 0.0
+      minimum_target_speed: actual_ego_speed
+    activation_condition: "internal filtered command requests negative acceleration"
+    activation_oracle: "FI-CTRL-005 activated"
+    expected_responsibility: ego
+    responsibility_basis: "only ego Control filtering and its internal state differ; publish logic and scenario are unchanged"
+    expected_cctest_verdict: Aa_or_Ae
+    candidate_cases:
+      - vista: merging
+        ve: 0.0
+        xa: 200.0
+        xf: 10.0
+        verified_clean_verdict: CS
+        faulty_verdict: Ae
+      - vista: merging
+        ve: 10.0
+        xa: 85.0
+        xf: 10.0
+        verified_clean_verdict: CS
+        faulty_verdict: Aa
+    validation_notes:
+      - "Two deterministic clean CS cases changed to ego-fault Ae/Aa."
+      - "The mutation occurs in filterControlCommand and propagates through the unmodified publisher."
+      - "All retained runs have rosbags and scene.yaml files with function- and code-level Ground Truth."
   - id: FI-PLAN-007
     status: validated_causal_ego_fault
     module: Planning

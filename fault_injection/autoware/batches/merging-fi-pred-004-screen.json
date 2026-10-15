@@ -1,0 +1,9 @@
+{
+  "fault_id": "FI-PRED-004",
+  "source": "Validated clean-CS merging cases requiring moving-object prediction",
+  "recording": {"enabled": true, "instance": "v1", "all_topics": true, "output_dir": "/home/ray/AutowareRecordings/FI-PRED-004/merging-screen"},
+  "cases": [
+    {"vista": "merging", "ve": 10.0, "xa": 85.0, "xf": 20.0, "source_verdict": "CS"},
+    {"vista": "merging", "ve": 15.0, "xa": 85.0, "xf": 20.0, "source_verdict": "CS"}
+  ]
+}

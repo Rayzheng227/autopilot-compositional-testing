@@ -7,25 +7,31 @@ base_revision="896fd1418b25c1501bad7f9b0116af1c0c8dd941"
 
 mkdir -p "$output_dir"
 
-fault_ids=(FI-CTRL-002 FI-CTRL-003 FI-CTRL-004 FI-PRED-001 FI-PRED-002 FI-PRED-003 FI-PLAN-005 FI-PLAN-006 FI-PLAN-007)
+fault_ids=(FI-CTRL-002 FI-CTRL-003 FI-CTRL-004 FI-CTRL-005 FI-PRED-001 FI-PRED-002 FI-PRED-003 FI-PRED-004 FI-PLAN-005 FI-PLAN-006 FI-PLAN-007 FI-PLAN-008)
 images=(
   autoware-cctest-fault:fi-ctrl-002
   autoware-cctest-fault:fi-ctrl-003
   autoware-cctest-fault:fi-ctrl-004
+  autoware-cctest-fault:fi-ctrl-005
   autoware-cctest-fault:fi-pred-001
   autoware-cctest-fault:fi-pred-002
   autoware-cctest-fault:fi-pred-003
+  autoware-cctest-fault:fi-pred-004
   autoware-cctest-fault:fi-plan-005
   autoware-cctest-fault:fi-plan-006
   autoware-cctest-fault:fi-plan-007
+  autoware-cctest-fault:fi-plan-008
 )
 source_paths=(
   /autoware/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
   /autoware/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
   /autoware/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
+  /autoware/src/universe/autoware.universe/control/vehicle_cmd_gate/src/vehicle_cmd_gate.cpp
   /autoware/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
   /autoware/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
   /autoware/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
+  /autoware/src/universe/autoware.universe/perception/map_based_prediction/src/map_based_prediction_node.cpp
+  /autoware/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
   /autoware/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
   /autoware/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
   /autoware/src/universe/autoware.universe/planning/motion_velocity_smoother/src/motion_velocity_smoother_node.cpp
